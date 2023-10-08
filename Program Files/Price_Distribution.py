@@ -50,33 +50,42 @@ fprice_df = fprice_df.dropna(subset=['price'])
 # Convert price datatype to float
 fprice_df['price'] = fprice_df['price'].replace('[\$,]', '', regex=True).astype(float)
 
-#Getting Min, Max price values
+# Drop duplicates of id and price and then sort by id and price
+fprice_df = fprice_df.drop_duplicates(subset=['id', 'price']).sort_values(by=['id', 'price'])
+fprice_df
+
+# Dynamically make bins and labels
+
 min_price = fprice_df["price"].min()
 max_price = fprice_df["price"].max()
+b_width = 500
+b = list(range(int(np.floor(min_price)), int(np.ceil(max_price)) + b_width, b_width))
+l = [f'{i}-{j}' for i, j in zip(b[:-1], b[1:])]
 
-# Loop unique id and plot
-for u_id in fprice_df['id'].unique():
-    subset = fprice_df[fprice_df['id'] == u_id]
-    plt.plot(subset['date'], subset['price'], label=f'ID: {unique_id}')
+# Create price category column
+fprice_df['price_category'] = pd.cut(fprice_df['price'], bins=b, labels=l)
 
-# Titles and labels
-plt.title(f'Property Price distribution, {s_date} - {e_date}')
+# Group by date and price and, count unique id
+fprice_df_grouped = fprice_df.groupby(['date', 'price_category'])['id'].nunique().reset_index()
+
+# Make price categories become columns
+fprice_df_pivot_grouped = fprice_df_grouped.pivot(index='date', columns='price_category', values='id')
+
+# Plot
+ax = fprice_df_pivot_grouped.plot(kind='bar', stacked=True, figsize=(15,7), cmap='Oranges')
+plt.title('Distribution of Unique IDs Across Various Price Ranges')
 plt.xlabel('Date')
-plt.ylabel('Price')
+plt.ylabel('Count of Unique IDs')
+plt.legend(title='Price Category', bbox_to_anchor=(1.05, 1), loc='upper left')
 
-# Formatting dates
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-plt.gcf().autofmt_xdate()
-
-# Add a legend
-plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-
-# Layout Adjustment
+# display fewer x-axis labels
+ax.xaxis.set_major_locator(plt.MaxNLocator(10))
+plt.xticks(rotation=45)
 plt.tight_layout()
 
-# Show the plot
-plt.show()
+# Save the plot
+plt.savefig("price_distribution.png", dpi=300, bbox_inches='tight')
+
 
 
 
