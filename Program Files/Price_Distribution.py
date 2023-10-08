@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[61]:
-
-
 # Library Imports
 
 import pandas as pd
@@ -21,10 +18,6 @@ e_date = '2019-05-19'
 s_date = datetime.strptime(s_date, "%Y-%m-%d") # INPUT MUST BE IN THIS FORMAT
 e_date = datetime.strptime(e_date, "%Y-%m-%d")
 
-
-# In[62]:
-
-
 # Load Data
 calendar_df = pd.read_csv("Data/calendar_dec18.csv")
 
@@ -36,36 +29,20 @@ calendar_df['date'] = pd.to_datetime(calendar_df['date'])
 #listing_id to id in calendar_df
 calendar_df.rename(columns={'listing_id': 'id'}, inplace=True)
 
-
-# In[63]:
-
-
 # Filtering by dates
 def date_filtered_listings(calendar_df,s_date, e_date):
     fprice_df = calendar_df[((calendar_df['date'] > s_date) & (calendar_df['date'] < e_date))]
     return fprice_df
-    # Outputs data frame containing filtered listings 
-
-
-# In[64]:
-
+    # Outputs data frame containing filtered listings
 
 # Execute functions
 fprice_df = date_filtered_listings(calendar_df,s_date, e_date)
 fprice_df
 
-
-# In[65]:
-
-
 # Drop Unneed Attributes
 fprice_df = fprice_df.drop('available', axis=1)
 fprice_df = fprice_df.reset_index(drop=True)
 fprice_df
-
-
-# In[66]:
-
 
 # Remove rows where 'price' is NaN
 fprice_df = fprice_df.dropna(subset=['price'])
@@ -73,17 +50,9 @@ fprice_df = fprice_df.dropna(subset=['price'])
 # Convert price datatype to float
 fprice_df['price'] = fprice_df['price'].replace('[\$,]', '', regex=True).astype(float)
 
-
-# In[67]:
-
-
 #Getting Min, Max price values
 min_price = fprice_df["price"].min()
 max_price = fprice_df["price"].max()
-
-
-# In[72]:
-
 
 # Loop unique id and plot
 for u_id in fprice_df['id'].unique():
@@ -108,9 +77,6 @@ plt.tight_layout()
 
 # Show the plot
 plt.show()
-
-
-# In[ ]:
 
 
 
