@@ -16,10 +16,7 @@ import pandas as pd
 #e_date = '19/02/2019'
 
 
-# In[78]:
-
-
-listings_df = pd.read_csv("Data/listings_summary_dec18.csv")
+listings_df = pd.read_csv("Data/listings_dec18.csv")
 calendar_df = pd.read_csv("Data/calendar_dec18.csv")
 
 # Datframe Convertions
@@ -29,10 +26,6 @@ calendar_df['date'] = pd.to_datetime(calendar_df['date'])
 
 #listing_id to id in calendar_df
 calendar_df.rename(columns={'listing_id': 'id'}, inplace=True)
-
-
-# In[79]:
-
 
 # Define Functions for Filtered Dataframe Creation
 
@@ -48,39 +41,33 @@ def date_filtered_listings(calendar_df,s_date, e_date):
     return fdate_df
     # Outputs data frame containing filtered listings 
 
-
-# In[80]:
-
+# Execute functions
+fsub_df = suburb_filtered_listings(listings_df, sub)
+fdate_df = date_filtered_listings(calendar_df,s_date, e_date)
 
 # Execute functions
 fsub_df = suburb_filtered_listings(listings_df, sub)
 fdate_df = date_filtered_listings(calendar_df,s_date, e_date)
 
 
-# In[84]:
-
-
-# Merges both filtered dataframes based on listing id
+## Merges both filtered dataframes based on listing id
 
 f_df = pd.merge (fsub_df, fdate_df, on='id')
 
-#Attribute Manipulation 
+#Attribute Manipulation
 
 # Drop Unneed Attributes
 f_df = f_df.drop('calculated_host_listings_count', axis=1)
 f_df = f_df.drop('price_y', axis=1)
-f_df = f_df.drop('neighbourhood_group', axis=1)
 
 # price_x to price in f_df
 f_df.rename(columns={'price_x': 'price'}, inplace=True)
 
-# sort 
+# sort
 f_df = f_df.sort_values(by=['id'])
-f_df
 
-
-# In[85]:
-
+#Drop Duplicates
+f_df = f_df.drop_duplicates(subset='id', keep='first')
 
 # Export filtered data
 f_df.to_csv('fitered_suburb_data.csv', index=False)
