@@ -18,7 +18,7 @@ rev_name = 'Ben'
 
 
 # Load datasets
-id_reviews_df = pd.read_csv("Data/reviews_dec18.csv")
+id_reviews_df = pd.read_csv("Data/TESTreviews_dec18.csv")
 id_reviews_df.info()
 
 
@@ -37,6 +37,7 @@ rev_name_df = reviews_by_name(id_reviews_df, rev_name)
 rev_name_df
 
 
+
 # In[8]:
 
 
@@ -51,4 +52,5 @@ rev_name_df
 
 # Export filtered data
 rev_name_df.to_csv('fitered_rev_name_data.csv', index=False)
+print (reviews_by_name(id_reviews_df, rev_name))
 
