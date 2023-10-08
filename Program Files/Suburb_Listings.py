@@ -7,7 +7,7 @@ import pandas as pd
 
 # NOTE!!! CODE REQUIRED TO RECIEVE INPUT VARIABLES  sub, s_date, e_date
 
-# TEST
+# WIP TEST VARIABLE COMMENT
 #sub = 'Mosman'
 #s_date = '19/01/2019'
 #e_date = '19/02/2019'
