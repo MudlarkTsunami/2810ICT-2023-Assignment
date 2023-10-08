@@ -7,6 +7,12 @@ import PySimpleGUI as sg
 sg.theme('DarkAmber')
 # Default value of the chart image points to an error image
 chartImage = 'img/Dizzy.png'
+# List of table headers
+tableHeaders = ['id', 'name', 'host id', 'host name', 'neighbourhood', 'latitude', 'longitude', 'room type', 'price',
+                'minimum nights', 'number of reviews', 'last review', 'reviews per month', 'availability 365',
+                'date', 'available']
+# sample table data for testing, to be removed
+sampleTable = [['1', '2', '5', '6'], ['3', '4'], ['5', '6']]
 
 # Left hand column, contains all the buttons
 ButtonSelectColumn = [
@@ -29,16 +35,17 @@ ButtonSelectColumn = [
     [sg.Button(button_text='by Price', key='priceBtn')]
 ]
 
-# Right hand column, will contain the generated chart images
+
+
+# Right hand column, will contain the table information
 ImageColumn = [
-    [sg.Text('Test text 1')],
-    [sg.Text('Test text 2')]
+    [sg.Table(headings=tableHeaders, values= sampleTable, def_col_width=15, auto_size_columns=False, vertical_scroll_only=False, )]
 ]
 
 # Main window layout, left column, vertical separator and right column
 mainLayout = [
     [
-        sg.Column(ButtonSelectColumn),
+        sg.Column(ButtonSelectColumn, size=(150,600)),
         sg.VSeparator(),
         sg.Column(ImageColumn)
     ]
@@ -46,16 +53,18 @@ mainLayout = [
 
 
 # Creating new window
-mainWindow = sg.Window('DigiBird Eyeview v0.01', mainLayout)
+mainWindow = sg.Window('DigiBird Eyeview v0.01', mainLayout, size=(800, 600))
+
 
 def SetChartImage(dateFrom, dateUntil):
     print(dateFrom, dateUntil)
     global chartImage
     # setting the desired path to find the chart image
-    chartImage = ('img/' + mainWindow['dateFromTxt'].get() + '-' + mainWindow['dateToTxt'].get() + 'Price.png')
+    chartImage = ('img/' + mainWindow['dateFromTxt'].get() + ',' + mainWindow['dateToTxt'].get() + ',Price.png')
     # Checking if that image exists, if it doesn't, defaulting to an error image
     if not os.path.isfile(chartImage):
         chartImage = "img/Dizzy.png"
+
 
 # Loop to process events while application is running
 while True:
