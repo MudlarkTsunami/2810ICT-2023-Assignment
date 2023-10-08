@@ -3,8 +3,11 @@ import os.path
 import numpy
 import Customer_Reviews as custrev
 import Suburb_Listings as suburbs
+import Keyword as listingKey
+import Price_Distribution as priceDist
 import pandas as pd
 import PySimpleGUI as sg
+from PIL import Image
 
 # Changing the default theme to a darker one
 sg.theme('DarkAmber')
@@ -13,7 +16,6 @@ chartImage = 'img/Dizzy.png'
 # Lists of table headers
 # Clean looking headers for each of the data sets
 reviewsHeaders = ['listing id','id','date','reviewer id','reviewer name','comments']
-keywordHeaders = ['id', 'summary', 'space', 'description', 'date']
 suburbHeaders = ['id','listing_url','scrape_id','last_scraped,name','summary,space','description',
                   'experiences_offered','neighborhood_overview','notes','transit','access',
                   'interaction','house_rules','thumbnail_url','medium_url','picture_url',
@@ -36,6 +38,7 @@ suburbHeaders = ['id','listing_url','scrape_id','last_scraped,name','summary,spa
                   'instant_bookable','is_business_travel_ready','cancellation_policy',
                   'require_guest_profile_picture','require_guest_phone_verification',
                   'reviews_per_month','date','available']
+keywordHeaders = ['id','summary','space','description','date', 'available', 'price']
 blankHeaders = list(range(1,100))
 
 # sample table data for testing, to be removed
@@ -44,10 +47,7 @@ sampleTable = [['1', 2, '5', '6','ok','whatever you want dude'], ['3', '4'], ['5
 id_reviews_df = pd.read_csv("Data/reviews_dec18.csv")
 listings_df = pd.read_csv("Data/listings_dec18.csv")
 calendar_df = pd.read_csv("Data/calendar_dec18.csv")
-# WIP TEST VARIABLE COMMENT
-sub = 'Mosman'
-s_date = '19/01/2019'
-e_date = '19/02/2019'
+
 
 
 # Left hand column, contains all the buttons
@@ -63,8 +63,8 @@ ButtonSelectColumn = [
     [sg.HSeparator()],
     [sg.Button(button_text='by Cleanliness')],
     [sg.HSeparator()],
-    [sg.Button(button_text='by Keyword')],
-    [sg.InputText()],
+    [sg.Button(button_text='by Keyword', key='byKeywordBtn')],
+    [sg.InputText(key='byKeywordInput')],
     [sg.HSeparator()],
     [sg.Button(button_text='by Name', key='byNameBtn')],
     [sg.InputText(key='byNameInput')],
@@ -98,9 +98,14 @@ mainWindow = sg.Window('DigiBird Eyeview v0.1', mainLayout, size=(800, 600))
 
 def SetChartImage(dateFrom, dateUntil):
     print(dateFrom, dateUntil)
+    priceDist.generate_date_distribution(calendar_df,dateFrom,dateUntil)
     global chartImage
     # setting the desired path to find the chart image
-    chartImage = ('img/' + mainWindow['dateFromTxt'].get() + ',' + mainWindow['dateToTxt'].get() + ',Price.png')
+    chartImage = 'img/price_distributionlive.png'
+    im = Image.open(chartImage)
+    width, height = im.size
+    im.thumbnail((1200,1200), Image.Resampling.LANCZOS)
+    im.save(chartImage)
     # Checking if that image exists, if it doesn't, defaulting to an error image
     if not os.path.isfile(chartImage):
         chartImage = "img/Dizzy.png"
@@ -130,12 +135,24 @@ def ListBySuburb(suburbGiven, startDate, endDate):
     return temporaryTableArray
 
 
+def ListByKeyword(keywordGiven, startDate, endDate):
+    # Getting the dataframe filtered by name
+    temporaryTableDataFrame = listingKey.find_keyword_listings(listings_df,calendar_df,keywordGiven,startDate,endDate)
+    # Converting the dataframe to a numpy array
+    temporaryTableArray = (pd.DataFrame.to_numpy(temporaryTableDataFrame))
+    # Converting the numpy array into a normal array (conversion straight to a list was not possible)
+    temporaryTableArray = numpy.ndarray.tolist(temporaryTableArray)
+    # Inserting header labels as the first row (changing table headers with pysimplegui is not possible)
+    temporaryTableArray.insert(0, keywordHeaders)
+    return temporaryTableArray
+
+
 # Loop to process events while application is running
 while True:
     event, values = mainWindow.read()
     if event == "priceBtn":
-        SetChartImage('ok', 'hello')
-        sg.popup('meowdy', image=chartImage)
+        SetChartImage(mainWindow['dateFromTxt'].get(), mainWindow['dateToTxt'].get())
+        sg.popup('Price Chart', image=chartImage)
 
     if event == "byNameBtn":
         mainWindow['dataTable'].update(values=ListByName(values['byNameInput']))
@@ -144,6 +161,11 @@ while True:
         print('start date' + mainWindow['dateFromTxt'].get())
         print('end date' + mainWindow['dateToTxt'].get())
         mainWindow['dataTable'].update(values=ListBySuburb(values['bySuburbInput'], mainWindow['dateFromTxt'].get(), mainWindow['dateToTxt'].get()))
+
+    if event == "byKeywordBtn":
+        print('start date' + mainWindow['dateFromTxt'].get())
+        print('end date' + mainWindow['dateToTxt'].get())
+        mainWindow['dataTable'].update(values=ListByKeyword(values['byKeywordInput'], mainWindow['dateFromTxt'].get(), mainWindow['dateToTxt'].get()))
 
     if event == sg.WIN_CLOSED: # if user closes window
         print('Application exited')

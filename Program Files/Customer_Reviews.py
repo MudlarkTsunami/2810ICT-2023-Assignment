@@ -8,7 +8,7 @@ import pandas as pd
 # NOTE!!! CODE REQUIRED TO RECIEVE INPUT VARIABLE  rev_name
 
 # WIP TEST VARIABLE
-# rev_name = 'Ben'
+rev_name = 'Ben'
 
 # Load datasets
 id_reviews_df = pd.read_csv("Data/reviews_dec18.csv")
