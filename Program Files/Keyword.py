@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[39]:
-
-
 # Library Imports
 
 import pandas as pd
@@ -11,21 +8,13 @@ from datetime import datetime
 
 # NOTE!!! CODE REQUIRED TO RECIEVE INPUT VARIABLES  keyword, s_date, e_date
 
-# TEST
+# WIP TEST VARIABLE COMMENT
 #keyword = 'pool'
 #s_date = '2019-01-19'
 #e_date = '2019-02-19'
 
-
-# In[42]:
-
-
 listings_df = pd.read_csv("Data/listings_dec18.csv")
 calendar_df = pd.read_csv("Data/calendar_dec18.csv")
-
-
-# In[43]:
-
 
 # Description dataframe extraction 
 check_attributes = ['id','summary','space','description']
@@ -42,10 +31,6 @@ calendar_df.rename(columns={'listing_id': 'id'}, inplace=True)
 # calendar dataframe attribute drops
 calendar_df = calendar_df.drop('available', axis=1)
 calendar_df = calendar_df.drop('price', axis=1)
-
-
-# In[44]:
-
 
 # Define Functions for Filtered Dataframe Creation
 
@@ -67,17 +52,9 @@ def date_filtered_listings(calendar_df,s_date, e_date):
     return fdate_df
     # Outputs data frame containing filtered listings 
 
-
-# In[46]:
-
-
 # Execute function
 flist_df = keyword_filtered_listings(listings_df, keyword, check_attributes) 
 fdate_df = date_filtered_listings(calendar_df,s_date, e_date)
-
-
-# In[49]:
-
 
 # Merges both filtered dataframes based on listing id
 f_df = pd.merge (flist_df, fdate_df, on='id')
@@ -88,10 +65,6 @@ f_df = f_df.sort_values(by=['id'])
 #Drop Duplicates
 f_df = f_df.drop_duplicates(subset='id', keep='first')
 f_df
-
-
-# In[ ]:
-
 
 # Export filtered data
 f_df.to_csv('fitered_keyword_data.csv', index=False)

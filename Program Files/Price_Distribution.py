@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[61]:
-
-
 # Library Imports
 
 import pandas as pd
@@ -13,17 +10,13 @@ from datetime import datetime
 
 # NOTE!!! CODE REQUIRED TO RECIEVE INPUT VARIABLES  s_date, e_date
 
-# TEST
-s_date = '2019-04-19'
-e_date = '2019-05-19'
+# WIP TEST VARIABLE COMMENT
+# s_date = '2019-04-19'
+# e_date = '2019-05-19'
 
 # Datetime allocation
 s_date = datetime.strptime(s_date, "%Y-%m-%d") # INPUT MUST BE IN THIS FORMAT
 e_date = datetime.strptime(e_date, "%Y-%m-%d")
-
-
-# In[62]:
-
 
 # Load Data
 calendar_df = pd.read_csv("Data/calendar_dec18.csv")
@@ -36,36 +29,20 @@ calendar_df['date'] = pd.to_datetime(calendar_df['date'])
 #listing_id to id in calendar_df
 calendar_df.rename(columns={'listing_id': 'id'}, inplace=True)
 
-
-# In[63]:
-
-
 # Filtering by dates
 def date_filtered_listings(calendar_df,s_date, e_date):
     fprice_df = calendar_df[((calendar_df['date'] > s_date) & (calendar_df['date'] < e_date))]
     return fprice_df
-    # Outputs data frame containing filtered listings 
-
-
-# In[64]:
-
+    # Outputs data frame containing filtered listings
 
 # Execute functions
 fprice_df = date_filtered_listings(calendar_df,s_date, e_date)
 fprice_df
 
-
-# In[65]:
-
-
 # Drop Unneed Attributes
 fprice_df = fprice_df.drop('available', axis=1)
 fprice_df = fprice_df.reset_index(drop=True)
 fprice_df
-
-
-# In[66]:
-
 
 # Remove rows where 'price' is NaN
 fprice_df = fprice_df.dropna(subset=['price'])
@@ -73,44 +50,42 @@ fprice_df = fprice_df.dropna(subset=['price'])
 # Convert price datatype to float
 fprice_df['price'] = fprice_df['price'].replace('[\$,]', '', regex=True).astype(float)
 
+# Drop duplicates of id and price and then sort by id and price
+fprice_df = fprice_df.drop_duplicates(subset=['id', 'price']).sort_values(by=['id', 'price'])
+fprice_df
 
-# In[67]:
+# Dynamically make bins and labels
 
-
-#Getting Min, Max price values
 min_price = fprice_df["price"].min()
 max_price = fprice_df["price"].max()
+b_width = 500
+b = list(range(int(np.floor(min_price)), int(np.ceil(max_price)) + b_width, b_width))
+l = [f'{i}-{j}' for i, j in zip(b[:-1], b[1:])]
 
+# Create price category column
+fprice_df['price_category'] = pd.cut(fprice_df['price'], bins=b, labels=l)
 
-# In[72]:
+# Group by date and price and, count unique id
+fprice_df_grouped = fprice_df.groupby(['date', 'price_category'])['id'].nunique().reset_index()
 
+# Make price categories become columns
+fprice_df_pivot_grouped = fprice_df_grouped.pivot(index='date', columns='price_category', values='id')
 
-# Loop unique id and plot
-for u_id in fprice_df['id'].unique():
-    subset = fprice_df[fprice_df['id'] == u_id]
-    plt.plot(subset['date'], subset['price'], label=f'ID: {unique_id}')
-
-# Titles and labels
-plt.title(f'Property Price distribution, {s_date} - {e_date}')
+# Plot
+ax = fprice_df_pivot_grouped.plot(kind='bar', stacked=True, figsize=(15,7), cmap='Oranges')
+plt.title('Distribution of Unique IDs Across Various Price Ranges')
 plt.xlabel('Date')
-plt.ylabel('Price')
+plt.ylabel('Count of Unique IDs')
+plt.legend(title='Price Category', bbox_to_anchor=(1.05, 1), loc='upper left')
 
-# Formatting dates
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-plt.gcf().autofmt_xdate()
-
-# Add a legend
-plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-
-# Layout Adjustment
+# display fewer x-axis labels
+ax.xaxis.set_major_locator(plt.MaxNLocator(10))
+plt.xticks(rotation=45)
 plt.tight_layout()
 
-# Show the plot
-plt.show()
+# Save the plot
+plt.savefig("price_distribution.png", dpi=300, bbox_inches='tight')
 
-
-# In[ ]:
 
 
 

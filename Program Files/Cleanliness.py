@@ -1,24 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[64]:
-
-
 # Library Imports
 
 import pandas as pd
 
-
-# In[65]:
-
-
 # Load datasets
 reviews_df = pd.read_csv("Data/reviews_dec18.csv")
 reviews_df.info()
-
-
-# In[66]:
-
 
 # Dataframe Manipulation
 
@@ -29,17 +18,9 @@ reviews_df = reviews_df.drop('reviewer_name', axis=1)
 reviews_df['comments'] = reviews_df['comments'].astype(str)
 reviews_df.info()
 
-
-# In[67]:
-
-
 # Establish Positive and Negative Cleanliness keywords
 pos_keywords = ['clean', 'tidy', 'immaculate', 'sanitary', 'spotless', 'neat'] # Reasoning: https://www.thesaurus.com/browse/clean
 neg_keywords = ['dirty', 'dusty', 'filthy', 'messy', 'stained', 'unkempt'] # Reasoning: https://www.thesaurus.com/browse/dirty
-
-
-# In[68]:
-
 
 # Designating functions
 
@@ -83,10 +64,6 @@ def count_keywords_in_reviews(reviews_df, pos_keywords, neg_keywords):
     
     return f_r_df
 
-
-# In[69]:
-
-
 f_r_df = keyword_filtered_reviews(reviews_df, pos_keywords, neg_keywords)
 
 f_r_df = count_keywords_in_reviews(f_r_df, pos_keywords, neg_keywords)
@@ -94,16 +71,10 @@ f_r_df = count_keywords_in_reviews(f_r_df, pos_keywords, neg_keywords)
 f_r_df
 
 
-# In[70]:
-
-
 # Group listing_id & keyword counts sum
 k_sum_df = f_r_df.groupby('listing_id')[['pos_keyword_count', 'neg_keyword_count']].sum().reset_index()
 
 k_sum_df
-
-
-# In[71]:
 
 
 #Percentage generation
@@ -114,10 +85,6 @@ k_sum_df['total_keywords'] = k_sum_df['pos_keyword_count'] + k_sum_df['neg_keywo
 # Make Percentage
 k_sum_df['pos_keyword_percentage'] = (k_sum_df['pos_keyword_count'] / k_sum_df['total_keywords']) * 100
 
-
-# In[72]:
-
-
 # table cleaning
 
 #Drop attribute
@@ -127,10 +94,6 @@ k_sum_df = k_sum_df.drop('total_keywords', axis=1)
 k_sum_df = k_sum_df.sort_values(by='pos_keyword_count', ascending=False)
 
 k_sum_df
-
-
-# In[74]:
-
 
 # Export filtered data
 k_sum_df.to_csv('fitered_Cleanliness_data.csv', index=False)
