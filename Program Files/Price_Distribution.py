@@ -10,9 +10,9 @@ from datetime import datetime
 
 # NOTE!!! CODE REQUIRED TO RECIEVE INPUT VARIABLES  s_date, e_date
 
-# TEST
-s_date = '2019-04-19'
-e_date = '2019-05-19'
+# WIP TEST VARIABLE COMMENT
+# s_date = '2019-04-19'
+# e_date = '2019-05-19'
 
 # Datetime allocation
 s_date = datetime.strptime(s_date, "%Y-%m-%d") # INPUT MUST BE IN THIS FORMAT
