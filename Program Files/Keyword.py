@@ -8,7 +8,7 @@ from datetime import datetime
 
 # NOTE!!! CODE REQUIRED TO RECIEVE INPUT VARIABLES  keyword, s_date, e_date
 
-# TEST
+# WIP TEST VARIABLE COMMENT
 #keyword = 'pool'
 #s_date = '2019-01-19'
 #e_date = '2019-02-19'
