@@ -1,35 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Library Imports 
 
-import pandas as pd 
+# Retrieve reviews by Name (reviewer_name)
+def reviews_by_name(reviews_dataframe, reviewer_name):
+    """
+    Fetches a dataframe of listings that contain the given reviewer name
+    :param reviews_dataframe: reviews dataframe
+    :param reviewer_name: reviewer's name
+    :return: dataframe of listings
+    """
+    # Dataframe Clean
+    reviews_dataframe = reviews_dataframe.drop_duplicates(subset='comments', keep='first')
+    reviews_dataframe = reviews_dataframe.sort_values(by='reviewer_id')
 
-# NOTE!!! CODE REQUIRED TO RECIEVE INPUT VARIABLE  rev_name
+    return reviews_dataframe[reviews_dataframe['reviewer_name'] == reviewer_name]
 
-# WIP TEST VARIABLE
-# rev_name = 'Ben'
-
-# Load datasets
-id_reviews_df = pd.read_csv("Data/reviews_dec18.csv")
-id_reviews_df.info()
-
-#Function/s
-
-# Retrieve reviews by Name (rev_name)
-def reviews_by_name(id_reviews_df, rev_name):
-
-    return id_reviews_df[id_reviews_df['reviewer_name'] == rev_name]
-
-rev_name_df = reviews_by_name(id_reviews_df, rev_name)
-
-rev_name_df
-
-# Dataframe Clean
-rev_name_df = rev_name_df.drop_duplicates(subset='comments', keep='first')
-rev_name_df = rev_name_df.sort_values(by='reviewer_id')
-rev_name_df
-
-# Export filtered data
-rev_name_df.to_csv('fitered_rev_name_data.csv', index=False)
 

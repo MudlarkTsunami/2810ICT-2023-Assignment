@@ -6,34 +6,6 @@
 import pandas as pd
 from datetime import datetime
 
-# NOTE!!! CODE REQUIRED TO RECIEVE INPUT VARIABLES  keyword, s_date, e_date
-
-# WIP TEST VARIABLE COMMENT
-#keyword = 'pool'
-#s_date = '2019-01-19'
-#e_date = '2019-02-19'
-
-listings_df = pd.read_csv("Data/listings_dec18.csv")
-calendar_df = pd.read_csv("Data/calendar_dec18.csv")
-
-# Description dataframe extraction 
-check_attributes = ['id','summary','space','description']
-listings_df = listings_df[check_attributes]
-
-# Datframe Convertions
-
-# date to datetime datatype
-calendar_df['date'] = pd.to_datetime(calendar_df['date'])
-
-# listing_id to id in calendar_df
-calendar_df.rename(columns={'listing_id': 'id'}, inplace=True)
-
-# calendar dataframe attribute drops
-calendar_df = calendar_df.drop('available', axis=1)
-calendar_df = calendar_df.drop('price', axis=1)
-
-# Define Functions for Filtered Dataframe Creation
-
 # Filtering by Keyword check
 def keyword_filtered_listings(listings_df, keyword, check_attributes):
     # Function to check if keyword is in any specified column of a row
@@ -50,22 +22,42 @@ def keyword_filtered_listings(listings_df, keyword, check_attributes):
 def date_filtered_listings(calendar_df,s_date, e_date):
     fdate_df = calendar_df[((calendar_df['date'] > s_date) & (calendar_df['date'] < e_date))]
     return fdate_df
-    # Outputs data frame containing filtered listings 
+    # Outputs data frame containing filtered listings
 
-# Execute function
-flist_df = keyword_filtered_listings(listings_df, keyword, check_attributes) 
-fdate_df = date_filtered_listings(calendar_df,s_date, e_date)
 
-# Merges both filtered dataframes based on listing id
-f_df = pd.merge (flist_df, fdate_df, on='id')
+def find_keyword_listings(listings_dataframe, calendar_dataframe, requested_keyword, start_date, end_date):
+    """
+    Fetches a dataframe of listings that contain the given keyword within a given time period
+    :param listings_dataframe: listings dataframe
+    :param calendar_dataframe: calendar dataframe
+    :param requested_keyword: requested keyword
+    :param start_date: start date
+    :param end_date: end date
+    :return: dataframe of listings
+    """
+    # function local version of unnecessary global variable, to allow for use of function in other files
+    local_check_attributes = ['id', 'summary', 'space', 'description']
+    listings_dataframe = listings_dataframe[local_check_attributes]
 
-# sort 
-f_df = f_df.sort_values(by=['id'])
+    # date to datetime datatype
+    calendar_dataframe['date'] = pd.to_datetime(calendar_dataframe['date'])
 
-#Drop Duplicates
-f_df = f_df.drop_duplicates(subset='id', keep='first')
-f_df
+    # listing_id to id in calendar_df
+    calendar_dataframe.rename(columns={'listing_id': 'id'}, inplace=True)
 
-# Export filtered data
-f_df.to_csv('fitered_keyword_data.csv', index=False)
+    # calendar dataframe attribute drops
+    # calendar_dataframe = calendar_dataframe.drop('available', axis=1)
+    # calendar_dataframe = calendar_dataframe.drop('price', axis=1)
 
+    #creating temporary lists
+    temporary_listings_dataframe = keyword_filtered_listings(listings_dataframe, requested_keyword, local_check_attributes)
+    temporary_date_dataframe = date_filtered_listings(calendar_dataframe, start_date, end_date)
+    temporary_merged_dataframe = pd.merge(temporary_listings_dataframe, temporary_date_dataframe, on='id')
+
+    # sort
+    temporary_merged_dataframe = temporary_merged_dataframe.sort_values(by=['id'])
+
+    # Drop Duplicates
+    temporary_merged_dataframe = temporary_merged_dataframe.drop_duplicates(subset='id', keep='first')
+
+    return temporary_merged_dataframe
