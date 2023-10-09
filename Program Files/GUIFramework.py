@@ -43,64 +43,74 @@ keywordHeaders = ['id','summary','space','description','date', 'available', 'pri
 cleanlinessHeaders = ['listing id','positive keywords','negative keywords','positive keyword %']
 blankHeaders = list(range(1,100))
 
-# sample table data for testing, to be removed
-sampleTable = [['1', 2, '5', '6','ok','whatever you want dude'], ['3', '4'], ['5', '6']]
 
-id_reviews_df = pd.read_csv("Data/reviews_dec18.csv")
-listings_df = pd.read_csv("Data/listings_dec18.csv")
-calendar_df = pd.read_csv("Data/calendar_dec18.csv")
-
+# Loading the CSV files into dataframes
+reviews_dataframe = pd.read_csv("Data/reviews_dec18.csv")
+listings_dataframe = pd.read_csv("Data/listings_dec18.csv",low_memory=False)
+calendar_dataframe = pd.read_csv("Data/calendar_dec18.csv")
 
 
 # Left hand column, contains all the buttons
-ButtonSelectColumn = [
+button_select_column = [
     [sg.CalendarButton(button_text='date from', key='dateToBtn', target='dateFromTxt', format="%d/%m/%Y"),
      sg.Text(text=datetime.date.today().strftime("%d/%m/%Y"), key='dateFromTxt')],
+    
     [sg.Text('to')],
+    
     [sg.CalendarButton(button_text='date to', key='dateFromBtn', target='dateToTxt', format="%d/%m/%Y"),
      sg.Text(text=datetime.date.today().strftime("%d/%m/%Y"), key='dateToTxt')],
-    [sg.HSeparator()],
+    
+    [sg.HSeparator(pad=((5, 5), (20, 20)))],
+    
     [sg.Button(button_text='by Suburb',key='suburbBtn')],
+    
     [sg.InputText(key='bySuburbInput')],
-    [sg.HSeparator()],
+    
+    [sg.HSeparator(pad=((5, 5), (20, 20)))],
+    
     [sg.Button(button_text='by Cleanliness',key='byCleanBtn')],
-    [sg.HSeparator()],
+    
+    [sg.HSeparator(pad=((5, 5), (20, 20)))],
+    
     [sg.Button(button_text='by Keyword', key='byKeywordBtn')],
+    
     [sg.InputText(key='byKeywordInput')],
-    [sg.HSeparator()],
+    
+    [sg.HSeparator(pad=((5, 5), (20, 20)))],
+    
     [sg.Button(button_text='by Name', key='byNameBtn')],
+    
     [sg.InputText(key='byNameInput')],
-    [sg.HSeparator()],
+    
+    [sg.HSeparator(pad=((5, 5), (20, 20)))],
+    
     [sg.Button(button_text='by Price', key='priceBtn')]
 ]
 
 
-
 # Right hand column, will contain the table information
-ImageColumn = [
-    # REMOVE Planned to use one set of data and therefore only one set of headers, this may not be possible due to how the other files are structured
-    # [sg.Table(headings=tableHeaders, values= sampleTable, def_col_width=15, auto_size_columns=False, vertical_scroll_only=False, key='dataTable')]
-[sg.Table(values=sampleTable, headings=blankHeaders, def_col_width=15,
+table_column = [
+    [sg.Table(values=[[]], headings=blankHeaders, def_col_width=15,
           num_rows=15, auto_size_columns=False, vertical_scroll_only=False, key='dataTable')]
 ]
 
 # Main window layout, left column, vertical separator and right column
-mainLayout = [
+main_layout = [
     [
-        sg.Column(ButtonSelectColumn, size=(150,600)),
+        sg.Column(button_select_column, size=(150,600)),
         sg.VSeparator(),
-        sg.Column(ImageColumn)
+        sg.Column(table_column)
     ]
 ]
 
 
 # Creating new window
-mainWindow = sg.Window('DigiBird Eyeview v0.1', mainLayout, size=(800, 600))
+mainWindow = sg.Window('DigiBird Eyeview v0.1', main_layout, size=(800, 600))
 
 
-def SetChartImage(dateFrom, dateUntil):
-    print(dateFrom, dateUntil)
-    priceDist.generate_date_distribution(calendar_df,dateFrom,dateUntil)
+def SetChartImage(date_from, date_until):
+    print(date_from, date_until)
+    priceDist.generate_date_distribution(calendar_dataframe, date_from, date_until)
     global chartImage
     # setting the desired path to find the chart image
     chartImage = 'img/price_distributionlive.png'
@@ -113,52 +123,54 @@ def SetChartImage(dateFrom, dateUntil):
         chartImage = "img/Dizzy.png"
 
 
-def ListByName(nameGiven):
+def ListByName(name_given):
     # Getting the dataframe filtered by name
-    temporaryTableDataFrame = custrev.reviews_by_name(id_reviews_df, nameGiven)
+    temporary_table_data_frame = custrev.reviews_by_name(reviews_dataframe, name_given)
     # Converting the dataframe to a numpy array
-    temporaryTableArray = (pd.DataFrame.to_numpy(temporaryTableDataFrame))
+    temporary_table_array = (pd.DataFrame.to_numpy(temporary_table_data_frame))
     # Converting the numpy array into a normal array (conversion straight to a list was not possible)
-    temporaryTableArray = numpy.ndarray.tolist(temporaryTableArray)
+    temporary_table_array = numpy.ndarray.tolist(temporary_table_array)
     # Inserting header labels as the first row (changing table headers with pysimplegui is not possible)
-    temporaryTableArray.insert(0, reviewsHeaders)
-    return temporaryTableArray
+    temporary_table_array.insert(0, reviewsHeaders)
+    return temporary_table_array
 
 
 def ListByCleanliness():
     # Getting the dataframe filtered by name
-    temporaryTableDataFrame = cleans.find_by_cleanliness(id_reviews_df)
+    temporary_table_data_frame = cleans.find_by_cleanliness(reviews_dataframe)
     # Converting the dataframe to a numpy array
-    temporaryTableArray = (pd.DataFrame.to_numpy(temporaryTableDataFrame))
+    temporary_table_array = (pd.DataFrame.to_numpy(temporary_table_data_frame))
     # Converting the numpy array into a normal array (conversion straight to a list was not possible)
-    temporaryTableArray = numpy.ndarray.tolist(temporaryTableArray)
+    temporary_table_array = numpy.ndarray.tolist(temporary_table_array)
     # Inserting header labels as the first row (changing table headers with pysimplegui is not possible)
-    temporaryTableArray.insert(0, cleanlinessHeaders)
-    return temporaryTableArray
+    temporary_table_array.insert(0, cleanlinessHeaders)
+    return temporary_table_array
 
 
-def ListBySuburb(suburbGiven, startDate, endDate):
+def ListBySuburb(suburb_given, start_date, end_date):
     # Getting the dataframe filtered by suburb and dates
-    temporaryTableDataFrame = suburbs.find_suburb_listings(listings_df,calendar_df,suburbGiven,startDate,endDate)
+    temporary_table_data_frame = suburbs.find_suburb_listings(listings_dataframe, calendar_dataframe, suburb_given,
+                                                           start_date, end_date)
     # Converting the dataframe to a numpy array
-    temporaryTableArray = (pd.DataFrame.to_numpy(temporaryTableDataFrame))
+    temporary_table_array = (pd.DataFrame.to_numpy(temporary_table_data_frame))
     # Converting the numpy array into a normal array (conversion straight to a list was not possible)
-    temporaryTableArray = numpy.ndarray.tolist(temporaryTableArray)
+    temporary_table_array = numpy.ndarray.tolist(temporary_table_array)
     # Inserting header labels as the first row (changing table headers with pysimplegui is not possible)
-    temporaryTableArray.insert(0, suburbHeaders)
-    return temporaryTableArray
+    temporary_table_array.insert(0, suburbHeaders)
+    return temporary_table_array
 
 
-def ListByKeyword(keywordGiven, startDate, endDate):
+def ListByKeyword(keyword_given, start_date, end_date):
     # Getting the dataframe filtered by keyword and dates
-    temporaryTableDataFrame = listingKey.find_keyword_listings(listings_df,calendar_df,keywordGiven,startDate,endDate)
+    temporary_table_data_frame = listingKey.find_keyword_listings(listings_dataframe, calendar_dataframe,
+                                                                  keyword_given, start_date, end_date)
     # Converting the dataframe to a numpy array
-    temporaryTableArray = (pd.DataFrame.to_numpy(temporaryTableDataFrame))
+    temporary_table_array = (pd.DataFrame.to_numpy(temporary_table_data_frame))
     # Converting the numpy array into a normal array (conversion straight to a list was not possible)
-    temporaryTableArray = numpy.ndarray.tolist(temporaryTableArray)
+    temporary_table_array = numpy.ndarray.tolist(temporary_table_array)
     # Inserting header labels as the first row (changing table headers with pysimplegui is not possible)
-    temporaryTableArray.insert(0, keywordHeaders)
-    return temporaryTableArray
+    temporary_table_array.insert(0, keywordHeaders)
+    return temporary_table_array
 
 
 # Loop to process events while application is running
@@ -177,16 +189,17 @@ while True:
     if event == "suburbBtn":
         print('start date' + mainWindow['dateFromTxt'].get())
         print('end date' + mainWindow['dateToTxt'].get())
-        mainWindow['dataTable'].update(values=ListBySuburb(values['bySuburbInput'], mainWindow['dateFromTxt'].get(), mainWindow['dateToTxt'].get()))
+        mainWindow['dataTable'].update(values=ListBySuburb(values['bySuburbInput'], mainWindow['dateFromTxt'].get(),
+                                                           mainWindow['dateToTxt'].get()))
 
     if event == "byKeywordBtn":
         print('start date' + mainWindow['dateFromTxt'].get())
         print('end date' + mainWindow['dateToTxt'].get())
-        mainWindow['dataTable'].update(values=ListByKeyword(values['byKeywordInput'], mainWindow['dateFromTxt'].get(), mainWindow['dateToTxt'].get()))
+        mainWindow['dataTable'].update(values=ListByKeyword(values['byKeywordInput'], mainWindow['dateFromTxt'].get(),
+                                                            mainWindow['dateToTxt'].get()))
 
     if event == sg.WIN_CLOSED: # if user closes window
         print('Application exited')
         break
-
 
 mainWindow.close()

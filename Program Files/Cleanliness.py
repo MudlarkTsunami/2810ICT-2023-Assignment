@@ -1,29 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Library Imports
-
-import pandas as pd
-
-
-# Load datasets
-reviews_df = pd.read_csv("Data/reviews_dec18.csv")
-reviews_df.info()
-
-# Dataframe Manipulation
-
-reviews_df = reviews_df.drop_duplicates(subset='comments', keep='first')
-reviews_df = reviews_df.drop('date', axis=1)
-reviews_df = reviews_df.drop('reviewer_id', axis=1)
-reviews_df = reviews_df.drop('reviewer_name', axis=1)
-reviews_df['comments'] = reviews_df['comments'].astype(str)
-reviews_df.info()
-
 # Establish Positive and Negative Cleanliness keywords
 pos_keywords = ['clean', 'tidy', 'immaculate', 'sanitary', 'spotless', 'neat'] # Reasoning: https://www.thesaurus.com/browse/clean
 neg_keywords = ['dirty', 'dusty', 'filthy', 'messy', 'stained', 'unkempt'] # Reasoning: https://www.thesaurus.com/browse/dirty
 
-# Designating functions
 
 # Identifies keywords
 def keyword_filtered_reviews(reviews_df):
@@ -50,6 +31,7 @@ def keyword_filtered_reviews(reviews_df):
 #Counts Keywords
 def count_keywords_in_reviews(reviews_df):
     # Check Comment is String
+    # WARNING - this line throws soft errors
     reviews_df['comments'] = reviews_df['comments'].astype(str)
     
     # Count keywords in text
@@ -58,7 +40,8 @@ def count_keywords_in_reviews(reviews_df):
         for word in keywords:
             count += text.lower().count(word)
         return count
-    
+
+    # WARNING - these lines throws soft errors
     #Count Both pos and neg keywords
     reviews_df['pos_keyword_count'] = reviews_df['comments'].apply(lambda x: keywords_count(pos_keywords, x))
     reviews_df['neg_keyword_count'] = reviews_df['comments'].apply(lambda x: keywords_count(neg_keywords, x))
@@ -67,6 +50,11 @@ def count_keywords_in_reviews(reviews_df):
 
 
 def find_by_cleanliness(reviews_dataframe):
+    """
+    Generates a dataframe of listings that contain designated positive and negative phrases
+    :param reviews_dataframe: reviews dataframe
+    :return: a dataframe of listings
+    """
     reviews_dataframe = keyword_filtered_reviews(reviews_dataframe)
 
     reviews_dataframe = count_keywords_in_reviews(reviews_dataframe)
@@ -91,38 +79,3 @@ def find_by_cleanliness(reviews_dataframe):
     temporary_reviews_dataframe = temporary_reviews_dataframe.sort_values(by='pos_keyword_count', ascending=False)
 
     return temporary_reviews_dataframe
-
-
-reviews_df = keyword_filtered_reviews(reviews_df)
-
-reviews_df = count_keywords_in_reviews(reviews_df)
-
-find_by_cleanliness(reviews_df)
-
-
-
-# Group listing_id & keyword counts sum
-k_sum_df = reviews_df.groupby('listing_id')[['pos_keyword_count', 'neg_keyword_count']].sum().reset_index()
-
-
-
-
-#Percentage generation
-
-# Make totals
-k_sum_df['total_keywords'] = k_sum_df['pos_keyword_count'] + k_sum_df['neg_keyword_count']
-
-# Make Percentage
-k_sum_df['pos_keyword_percentage'] = (k_sum_df['pos_keyword_count'] / k_sum_df['total_keywords']) * 100
-
-# table cleaning
-
-#Drop attribute
-k_sum_df = k_sum_df.drop('total_keywords', axis=1)
-
-#Order by decending 'pos_keyword_count'
-k_sum_df = k_sum_df.sort_values(by='pos_keyword_count', ascending=False)
-
-# Export filtered data
-k_sum_df.to_csv('fitered_Cleanliness_data.csv', index=False)
-
