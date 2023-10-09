@@ -1,5 +1,6 @@
+# NOT USED DUE TO REFORMATTING OF "Customer_Reviews.py" FILE
+"""
 #Import
-
 import pandas as pd
 import pytest
 import Customer_Reviews as cr
@@ -41,3 +42,5 @@ for t_func in [t_rev_by_name]:
         t_res["Failed"].append(t_func.__name__)
 
 t_res
+
+"""
