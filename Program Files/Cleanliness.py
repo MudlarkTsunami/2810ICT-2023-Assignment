@@ -5,6 +5,7 @@
 
 import pandas as pd
 
+
 # Load datasets
 reviews_df = pd.read_csv("Data/reviews_dec18.csv")
 reviews_df.info()
@@ -25,7 +26,7 @@ neg_keywords = ['dirty', 'dusty', 'filthy', 'messy', 'stained', 'unkempt'] # Rea
 # Designating functions
 
 # Identifies keywords
-def keyword_filtered_reviews(reviews_df, pos_keywords, neg_keywords):
+def keyword_filtered_reviews(reviews_df):
     # Check Comment is String 
     reviews_df['comments'] = reviews_df['comments'].astype(str)
     
@@ -44,10 +45,10 @@ def keyword_filtered_reviews(reviews_df, pos_keywords, neg_keywords):
     mask = pos_mask | neg_mask
     
     # Filter dataframe by mask
-    return f_r_df[mask]
+    return reviews_df[mask]
 
 #Counts Keywords
-def count_keywords_in_reviews(reviews_df, pos_keywords, neg_keywords):
+def count_keywords_in_reviews(reviews_df):
     # Check Comment is String
     reviews_df['comments'] = reviews_df['comments'].astype(str)
     
@@ -62,19 +63,48 @@ def count_keywords_in_reviews(reviews_df, pos_keywords, neg_keywords):
     reviews_df['pos_keyword_count'] = reviews_df['comments'].apply(lambda x: keywords_count(pos_keywords, x))
     reviews_df['neg_keyword_count'] = reviews_df['comments'].apply(lambda x: keywords_count(neg_keywords, x))
     
-    return f_r_df
+    return reviews_df
 
-f_r_df = keyword_filtered_reviews(reviews_df, pos_keywords, neg_keywords)
 
-f_r_df = count_keywords_in_reviews(f_r_df, pos_keywords, neg_keywords)
+def find_by_cleanliness(reviews_dataframe):
+    reviews_dataframe = keyword_filtered_reviews(reviews_dataframe)
 
-f_r_df
+    reviews_dataframe = count_keywords_in_reviews(reviews_dataframe)
+
+    # Group listing_id & keyword counts sum
+    temporary_reviews_dataframe = reviews_dataframe.groupby('listing_id')[['pos_keyword_count', 'neg_keyword_count']].sum().reset_index()
+
+    # Percentage generation
+
+    # Make totals
+    temporary_reviews_dataframe['total_keywords'] = temporary_reviews_dataframe['pos_keyword_count'] + temporary_reviews_dataframe['neg_keyword_count']
+
+    # Make Percentage
+    temporary_reviews_dataframe['pos_keyword_percentage'] = (temporary_reviews_dataframe['pos_keyword_count'] / temporary_reviews_dataframe['total_keywords']) * 100
+
+    # table cleaning
+
+    # Drop attribute
+    temporary_reviews_dataframe = temporary_reviews_dataframe.drop('total_keywords', axis=1)
+
+    # Order by decending 'pos_keyword_count'
+    temporary_reviews_dataframe = temporary_reviews_dataframe.sort_values(by='pos_keyword_count', ascending=False)
+
+    return temporary_reviews_dataframe
+
+
+reviews_df = keyword_filtered_reviews(reviews_df)
+
+reviews_df = count_keywords_in_reviews(reviews_df)
+
+find_by_cleanliness(reviews_df)
+
 
 
 # Group listing_id & keyword counts sum
-k_sum_df = f_r_df.groupby('listing_id')[['pos_keyword_count', 'neg_keyword_count']].sum().reset_index()
+k_sum_df = reviews_df.groupby('listing_id')[['pos_keyword_count', 'neg_keyword_count']].sum().reset_index()
 
-k_sum_df
+
 
 
 #Percentage generation
@@ -92,8 +122,6 @@ k_sum_df = k_sum_df.drop('total_keywords', axis=1)
 
 #Order by decending 'pos_keyword_count'
 k_sum_df = k_sum_df.sort_values(by='pos_keyword_count', ascending=False)
-
-k_sum_df
 
 # Export filtered data
 k_sum_df.to_csv('fitered_Cleanliness_data.csv', index=False)
