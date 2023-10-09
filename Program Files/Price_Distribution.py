@@ -73,4 +73,4 @@ def generate_date_distribution(calendar_dataframe, start_date, end_date):
     plt.tight_layout()
 
     # Save the plot
-    plt.savefig("img/price_distributionlive.png", dpi=300, bbox_inches='tight')
+    plt.savefig("_internal/price_distributionlive.png", dpi=300, bbox_inches='tight')

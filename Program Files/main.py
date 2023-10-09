@@ -13,7 +13,7 @@ from PIL import Image
 # Changing the default theme to a darker one
 sg.theme('DarkAmber')
 # Default value of the chart image points to an error image
-chartImage = 'img/Dizzy.png'
+chartImage = '_internal/Dizzy.png'
 # Lists of table headers
 # Clean looking headers for each of the data sets
 reviewsHeaders = ['listing id', 'id', 'date', 'reviewer id', 'reviewer name', 'comments']
@@ -44,9 +44,9 @@ cleanlinessHeaders = ['listing id', 'positive keywords', 'negative keywords', 'p
 blankHeaders = list(range(1, 100))
 
 # Loading the CSV files into dataframes
-reviews_dataframe = pd.read_csv("Data/reviews_dec18.csv")
-listings_dataframe = pd.read_csv("Data/listings_dec18.csv", low_memory=False)
-calendar_dataframe = pd.read_csv("Data/calendar_dec18.csv")
+reviews_dataframe = pd.read_csv("_internal/reviews_dec18.csv")
+listings_dataframe = pd.read_csv("_internal/listings_dec18.csv", low_memory=False)
+calendar_dataframe = pd.read_csv("_internal/calendar_dec18.csv")
 
 # Left hand column, contains all the buttons
 button_select_column = [
@@ -88,7 +88,7 @@ button_select_column = [
 # Right hand column, will contain the table information
 table_column = [
     [sg.Table(values=[[]], headings=blankHeaders, def_col_width=15,
-              num_rows=15, auto_size_columns=False, vertical_scroll_only=False, key='dataTable')]
+              num_rows=25, auto_size_columns=False, vertical_scroll_only=False, key='dataTable')]
 ]
 
 # Main window layout, left column, vertical separator and right column
@@ -101,7 +101,7 @@ main_layout = [
 ]
 
 # Creating new window
-mainWindow = sg.Window('DigiBird Eyeview v0.1', main_layout, size=(800, 600))
+mainWindow = sg.Window('DigiBird Eyeview v1', main_layout, size=(800, 600))
 
 
 def SetChartImage(date_from, date_until):
@@ -115,14 +115,14 @@ def SetChartImage(date_from, date_until):
     priceDist.generate_date_distribution(calendar_dataframe, date_from, date_until)
     global chartImage
     # setting the desired path to find the chart image
-    chartImage = 'img/price_distributionlive.png'
+    chartImage = '_internal/price_distributionlive.png'
     im = Image.open(chartImage)
     width, height = im.size
     im.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
     im.save(chartImage)
     # Checking if that image exists, if it doesn't, defaulting to an error image
     if not os.path.isfile(chartImage):
-        chartImage = "img/Dizzy.png"
+        chartImage = "_internal/Dizzy.png"
 
 
 def ListByName(name_given):
